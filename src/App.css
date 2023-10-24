@@ -39,6 +39,7 @@ input{
     display: flex;
     
 }
+
 .div{
     
     display:flex;
@@ -52,6 +53,16 @@ input{
     padding:40px;
     border-radius: 10%;
     width:200px;
+    text-align: center;
+}
+.div11{
+    margin-left: 180px;
+    margin-top:30px;
+    background-color: rgba(199, 227, 253, 0.278);
+    padding:40px;
+    border-radius: 10%;
+    width:500px;
+    height:450px;
     text-align: center;
 }
 .div2{

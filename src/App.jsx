@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { BrowserRouter, Route, Routes, Outlet, useParams, Link } from "react-router-dom";
 import './App.css'
 const ACCESS_KEY = import.meta.env.VITE_APP_ACCESS_KEY;
 console.log(ACCESS_KEY);
@@ -6,15 +7,65 @@ function App() {
   const [list, setList] = useState(null);
   const [searchInput, setSearchInput] = useState("");
   const [filteredResults, setFilteredResults] = useState([]);
+  const [fullDetails, setFullDetails] = useState(null);
+  let params = useParams();
   
   
-  const fetchAllWeatherData = async () => {
-    const response = await fetch(`https://api.weatherbit.io/v2.0/history/daily?postal_code=27601&country=US&start_date=2023-10-01&end_date=2023-10-17&key=${ACCESS_KEY}`);
-    const json = await response.json();
-    setList(json);
-  }
+ 
 
   
+  
+  params = useParams();
+
+  
+  console.log(params.data);
+  useEffect(() => {
+    
+    const fetchAllWeatherData = async () => {
+   
+      const fetchWeatherData = await fetch(`https://api.weatherbit.io/v2.0/history/daily?postal_code=27601&country=US&start_date=2023-10-01&end_date=2023-10-23&key=${ACCESS_KEY}`);
+    
+      const fetchDetail = await fetch(`https://api.weatherbit.io/v2.0/history/daily?postal_code=27601&country=US&start_date=2023-10-01&end_date=2023-10-23&key=${ACCESS_KEY}`);
+
+    const json = await fetchWeatherData.json();
+    setList(json);
+    const json1 = await fetchDetail.json();
+    setFullDetails(json1);
+  };
+  
+
+    fetchAllWeatherData().catch(console.error);
+  }, []);
+
+  
+  
+const Detail = () => {
+    params = useParams();
+    var x = params.data.substring(params.data.length -2) - 1;
+    
+    
+    return (
+      <>
+        <div className='al'>
+        <div className = "side">
+      <h1>🔍WeatherData</h1>
+      <br></br>
+      <h3><Link to="/">🏠 Dashboard</Link></h3>
+      <h3>🔍 Search</h3>
+      <h3>ℹ️  About</h3>
+      </div>
+          
+          <div className='div11'>
+            <h1>Details</h1>
+            <h3>Date: {params.data} </h3>
+            <h3>Wind Speed: {fullDetails.data[x].wind_spd}</h3>
+            <h3>Wind Direction: {fullDetails.data[x].wind_dir}</h3>
+            <h3>Clouds:{fullDetails.data[x].clouds}  </h3>
+          </div>
+        </div>
+      </>
+    )
+  }
   const searchItems = searchValue => {
     setSearchInput(searchValue);
     if (searchValue !== "") {
@@ -26,24 +77,25 @@ function App() {
       setFilteredResults(list.data);
     }
   };
-  useEffect(() => {
-    fetchAllWeatherData().catch(console.error);
-  }, []);
 
   const highestTemp = list && list.data.reduce((prev, curr) => prev.max_temp > curr.max_temp ? prev : curr);
-  // console.log(highestTemp.max_temp);
+  console.log(highestTemp.max_temp);
   const lowestTemp = list && list.data.reduce((prev, curr) => prev.min_temp < curr.min_temp ? prev : curr);
-  // console.log(lowestTemp.min_temp);
+  console.log(lowestTemp.min_temp);
   const averageTemp = list && list.data.reduce((acc, curr) => acc + curr.temp, 0) / list.data.length;
-  // console.log(averageTemp);
+  
+ 
 
-  return (
-    <>
+  
+  const NoMatch = () => ( <h1>No Match</h1>)
+  const Home = () => {
+    return (
+      <>
       <div className= "al">
       <div className = "side">
       <h1>🔍WeatherData</h1>
       <br></br>
-      <h3>🏠 Dashboard</h3>
+      <h3><Link to="/">🏠 Dashboard</Link></h3>
       <h3>🔍 Search</h3>
       <h3>ℹ️  About</h3>
       </div>
@@ -82,6 +134,7 @@ function App() {
         <th>Max Temp</th>
         <th>Mini Temp</th>
         <th>Temperature</th>
+        <th>Detail</th>
     </tr>
     
   
@@ -92,6 +145,7 @@ function App() {
                     <td>{item.max_temp}</td>
                     <td>{item.min_temp}</td>
                     <td>{item.temp}</td>
+                    <td><Link to="/Detail">🔗</Link></td>
                   </tr>
                 ))
                 : 
@@ -104,6 +158,7 @@ function App() {
           <td>{item.max_temp}°C</td>
           <td>{item.min_temp}°C</td>
           <td>{item.temp}°C</td>
+          <td><Link to={item.datetime}>🔗</Link></td>
         </tr>
         
       ))}
@@ -111,10 +166,23 @@ function App() {
       </table>
       </div>
     </div>
-
        </div>
       </div>
-      
+      <Outlet />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <BrowserRouter>
+      <Routes>
+        <Route path="/" caseSensitive={true} element={<Home />}/>
+          <Route path="/:data" Component={Detail}>
+          </Route>
+        <Route path="*" element={<NoMatch />} />
+      </Routes>
+    </BrowserRouter>
     </>
   )
 }
